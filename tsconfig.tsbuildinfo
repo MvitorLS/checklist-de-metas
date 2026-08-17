@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/components/bottomnav.tsx","./src/components/metacard.tsx","./src/components/novametamodal.tsx","./src/context/metascontext.tsx","./src/screens/dashboardscreen.tsx","./src/screens/metasanuaisscreen.tsx","./src/screens/metasdiariasscreen.tsx","./src/screens/metasmensaisscreen.tsx","./src/types/meta.ts"],"version":"5.7.3"}
