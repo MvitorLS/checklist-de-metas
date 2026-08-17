@@ -1,0 +1,9 @@
+{
+  "appId": "com.matheus.metacheck",
+  "appName": "MetaCheck",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}
