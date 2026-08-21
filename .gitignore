@@ -1,4 +1,30 @@
+# Dependencies
 node_modules/
+.pnp
+.pnp.js
+
+# Production
 dist/
+build/
+
+# IDE and Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
 .DS_Store
 Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+
+# Android / Mobile build files
+android/.gradle/
+android/build/
+android/app/build/
+android/captures/
+android/.idea/
+*.apk
+*.aab
