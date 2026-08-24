@@ -83,6 +83,12 @@ export const MetaCard: React.FC<MetaCardProps> = ({ meta }) => {
               </span>
             )}
 
+            {isDiaria && meta.horarioLembrete && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '0.72rem', color: '#38bdf8', fontWeight: 700, background: 'rgba(56, 189, 248, 0.12)', padding: '2px 6px', borderRadius: '6px' }}>
+                ⏰ {meta.horarioLembrete}
+              </span>
+            )}
+
             {!isDiaria && (
               <span className="meta-deadline">
                 <Calendar size={12} />

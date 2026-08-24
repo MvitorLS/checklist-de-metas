@@ -22,6 +22,15 @@ export interface Meta {
   subtarefas: Subtarefa[];
   concluidaHoje?: boolean; // Para metas diárias
   diasSeguidos?: number; // Streaks
+  horarioLembrete?: string; // Ex: '08:30' para alarme/notificação
+}
+
+export interface ConfiguracoesNotificacao {
+  ativado: boolean;
+  horarioMatinal: string; // Ex: '08:00'
+  horarioNoturno: string; // Ex: '20:00'
+  lembreteIndividual: boolean;
+  comemorarConclusao: boolean;
 }
 
 export interface EstatisticasMetas {
@@ -34,3 +43,4 @@ export interface EstatisticasMetas {
   mensaisEsteMes: { total: number; concluidas: number; taxa: number };
   anuaisEsteAno: { total: number; concluidas: number; taxa: number };
 }
+

@@ -18,6 +18,7 @@ export const NovaMetaModal: React.FC<NovaMetaModalProps> = ({ aberto, fechar, ti
   const [dataPrazo, setDataPrazo] = useState(
     new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   );
+  const [horarioLembrete, setHorarioLembrete] = useState('');
   const [subtarefas, setSubtarefas] = useState<string[]>(['']);
 
   if (!aberto) return null;
@@ -48,12 +49,14 @@ export const NovaMetaModal: React.FC<NovaMetaModalProps> = ({ aberto, fechar, ti
       tipo,
       categoria,
       dataPrazo,
+      horarioLembrete: tipo === 'diaria' && horarioLembrete ? horarioLembrete : undefined,
       subtarefasTitulos: tipo !== 'diaria' ? subtarefas.filter(s => s.trim()) : []
     });
 
     // Reset
     setTitulo('');
     setDescricao('');
+    setHorarioLembrete('');
     setSubtarefas(['']);
     fechar();
   }
@@ -136,7 +139,7 @@ export const NovaMetaModal: React.FC<NovaMetaModalProps> = ({ aberto, fechar, ti
               </select>
             </div>
 
-            {tipo !== 'diaria' && (
+            {tipo !== 'diaria' ? (
               <div className="form-group">
                 <label className="form-label">Data Prazo</label>
                 <input 
@@ -145,6 +148,17 @@ export const NovaMetaModal: React.FC<NovaMetaModalProps> = ({ aberto, fechar, ti
                   value={dataPrazo}
                   onChange={e => setDataPrazo(e.target.value)}
                   required 
+                />
+              </div>
+            ) : (
+              <div className="form-group">
+                <label className="form-label">⏰ Horário (Alarme Opcional)</label>
+                <input 
+                  type="time" 
+                  className="form-input"
+                  value={horarioLembrete}
+                  onChange={e => setHorarioLembrete(e.target.value)}
+                  placeholder="Ex: 08:30"
                 />
               </div>
             )}

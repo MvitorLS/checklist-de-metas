@@ -1,18 +1,23 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { Meta, TipoMeta, Subtarefa, CategoriaMeta } from '../types/meta';
+import { Meta, TipoMeta, StatusMeta, Subtarefa, CategoriaMeta, ConfiguracoesNotificacao } from '../types/meta';
+import { notificationService } from '../services/notificationService';
 
 interface MetasContextType {
   metas: Meta[];
-  adicionarMeta: (meta: Omit<Meta, 'id' | 'dataCriacao' | 'progresso' | 'status' | 'subtarefas'> & { subtarefasTitulos?: string[] }) => void;
+  configNotificacoes: ConfiguracoesNotificacao;
+  atualizarConfigNotificacoes: (novaConfig: Partial<ConfiguracoesNotificacao>) => Promise<void>;
+  adicionarMeta: (meta: Omit<Meta, 'id' | 'dataCriacao' | 'progresso' | 'status' | 'subtarefas'> & { subtarefasTitulos?: string[]; horarioLembrete?: string }) => void;
   alternarMetaDiaria: (id: string) => void;
   alternarSubtarefa: (metaId: string, subtarefaId: string) => void;
   adicionarSubtarefa: (metaId: string, titulo: string) => void;
   removerMeta: (id: string) => void;
   editarMeta: (id: string, dados: Partial<Meta>) => void;
+  testarNotificacao: () => Promise<boolean>;
 }
 
 const MetasContext = createContext<MetasContextType | undefined>(undefined);
+
 
 const METAS_INICIAIS: Meta[] = [
   {
@@ -140,13 +145,50 @@ export const MetasProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return METAS_INICIAIS;
   });
 
+  const [configNotificacoes, setConfigNotificacoes] = useState<ConfiguracoesNotificacao>(() => {
+    const salvo = localStorage.getItem('@metas_notificacoes_v1');
+    if (salvo) {
+      try {
+        return JSON.parse(salvo);
+      } catch (e) {}
+    }
+    return {
+      ativado: true,
+      horarioMatinal: '08:00',
+      horarioNoturno: '20:00',
+      lembreteIndividual: true,
+      comemorarConclusao: true
+    };
+  });
+
   useEffect(() => {
     try {
       localStorage.setItem('@metas_app_v1', JSON.stringify(metas));
     } catch (e) {
       console.error('Falha ao persistir metas no storage:', e);
     }
-  }, [metas]);
+
+    // Agenda ou atualiza os lembretes diários automaticamente
+    notificationService.scheduleDailyReminders(configNotificacoes, metas);
+  }, [metas, configNotificacoes]);
+
+  async function atualizarConfigNotificacoes(novaConfig: Partial<ConfiguracoesNotificacao>) {
+    setConfigNotificacoes(prev => {
+      const atualizada = { ...prev, ...novaConfig };
+      try {
+        localStorage.setItem('@metas_notificacoes_v1', JSON.stringify(atualizada));
+      } catch (e) {}
+      return atualizada;
+    });
+
+    if (novaConfig.ativado) {
+      await notificationService.requestPermission();
+    }
+  }
+
+  async function testarNotificacao(): Promise<boolean> {
+    return await notificationService.sendTestNotification();
+  }
 
   function dispararCelebracao() {
     try {
@@ -159,7 +201,7 @@ export const MetasProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } catch (e) {}
   }
 
-  function adicionarMeta(dados: Omit<Meta, 'id' | 'dataCriacao' | 'progresso' | 'status' | 'subtarefas'> & { subtarefasTitulos?: string[] }) {
+  function adicionarMeta(dados: Omit<Meta, 'id' | 'dataCriacao' | 'progresso' | 'status' | 'subtarefas'> & { subtarefasTitulos?: string[]; horarioLembrete?: string }) {
     const id = Date.now().toString();
     const tituloLimpo = String(dados.titulo || '').trim().slice(0, 120);
     const descLimpa = String(dados.descricao || '').trim().slice(0, 500);
@@ -188,27 +230,39 @@ export const MetasProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       progresso: 0,
       subtarefas: subs,
       concluidaHoje: false,
-      diasSeguidos: 0
+      diasSeguidos: 0,
+      horarioLembrete: dados.horarioLembrete
     };
 
     setMetas(prev => [nova, ...prev]);
   }
 
   function alternarMetaDiaria(id: string) {
-    setMetas(prev => prev.map(m => {
-      if (m.id !== id) return m;
-      const novoStatus = !m.concluidaHoje;
-      if (novoStatus) {
-        dispararCelebracao();
+    setMetas(prev => {
+      const atualizadas = prev.map(m => {
+        if (m.id !== id) return m;
+        const novoStatus = !m.concluidaHoje;
+        if (novoStatus) {
+          dispararCelebracao();
+        }
+        return {
+          ...m,
+          concluidaHoje: novoStatus,
+          status: (novoStatus ? 'concluida' : 'pendente') as StatusMeta,
+          progresso: novoStatus ? 100 : 0,
+          diasSeguidos: novoStatus ? (m.diasSeguidos || 0) + 1 : Math.max(0, (m.diasSeguidos || 1) - 1)
+        };
+      });
+
+      // Se todas as diárias foram concluídas agora, dispara a notificação de vitória
+      const diarias = atualizadas.filter(m => m.tipo === 'diaria');
+      const todasConcluidas = diarias.length > 0 && diarias.every(m => m.concluidaHoje);
+      if (todasConcluidas && configNotificacoes.comemorarConclusao) {
+        notificationService.notifyAllCompleted();
       }
-      return {
-        ...m,
-        concluidaHoje: novoStatus,
-        status: novoStatus ? 'concluida' : 'pendente',
-        progresso: novoStatus ? 100 : 0,
-        diasSeguidos: novoStatus ? (m.diasSeguidos || 0) + 1 : Math.max(0, (m.diasSeguidos || 1) - 1)
-      };
-    }));
+
+      return atualizadas;
+    });
   }
 
   function alternarSubtarefa(metaId: string, subtarefaId: string) {
@@ -267,12 +321,15 @@ export const MetasProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <MetasContext.Provider value={{
       metas,
+      configNotificacoes,
+      atualizarConfigNotificacoes,
       adicionarMeta,
       alternarMetaDiaria,
       alternarSubtarefa,
       adicionarSubtarefa,
       removerMeta,
-      editarMeta
+      editarMeta,
+      testarNotificacao
     }}>
       {children}
     </MetasContext.Provider>
