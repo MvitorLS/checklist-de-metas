@@ -1,6 +1,7 @@
 export type TipoMeta = 'diaria' | 'mensal' | 'anual';
 export type StatusMeta = 'pendente' | 'em_andamento' | 'concluida';
 export type CategoriaMeta = 'saude' | 'estudos' | 'financas' | 'carreira' | 'pessoal';
+export type TemaVisual = 'tokyo-dark' | 'oled' | 'light' | 'cyberpunk' | 'emerald';
 
 export interface Subtarefa {
   id: string;

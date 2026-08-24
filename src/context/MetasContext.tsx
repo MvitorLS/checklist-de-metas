@@ -1,10 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { Meta, TipoMeta, StatusMeta, Subtarefa, CategoriaMeta, ConfiguracoesNotificacao } from '../types/meta';
+import { Meta, TipoMeta, StatusMeta, Subtarefa, CategoriaMeta, ConfiguracoesNotificacao, TemaVisual } from '../types/meta';
 import { notificationService } from '../services/notificationService';
 
 interface MetasContextType {
   metas: Meta[];
+  tema: TemaVisual;
+  mudarTema: (novoTema: TemaVisual) => void;
   configNotificacoes: ConfiguracoesNotificacao;
   atualizarConfigNotificacoes: (novaConfig: Partial<ConfiguracoesNotificacao>) => Promise<void>;
   adicionarMeta: (meta: Omit<Meta, 'id' | 'dataCriacao' | 'progresso' | 'status' | 'subtarefas'> & { subtarefasTitulos?: string[]; horarioLembrete?: string }) => void;
@@ -14,6 +16,9 @@ interface MetasContextType {
   removerMeta: (id: string) => void;
   editarMeta: (id: string, dados: Partial<Meta>) => void;
   testarNotificacao: () => Promise<boolean>;
+  exportarBackupJSON: () => void;
+  exportarCSV: () => void;
+  importarBackupJSON: (jsonString: string) => boolean;
 }
 
 const MetasContext = createContext<MetasContextType | undefined>(undefined);
@@ -160,6 +165,25 @@ export const MetasProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       comemorarConclusao: true
     };
   });
+
+  const [tema, setTema] = useState<TemaVisual>(() => {
+    const salvo = localStorage.getItem('@metas_tema_v1');
+    if (salvo && ['tokyo-dark', 'oled', 'light', 'cyberpunk', 'emerald'].includes(salvo)) {
+      return salvo as TemaVisual;
+    }
+    return 'tokyo-dark';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', tema);
+    try {
+      localStorage.setItem('@metas_tema_v1', tema);
+    } catch (e) {}
+  }, [tema]);
+
+  function mudarTema(novoTema: TemaVisual) {
+    setTema(novoTema);
+  }
 
   useEffect(() => {
     try {
@@ -318,9 +342,74 @@ export const MetasProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setMetas(prev => prev.map(m => m.id === id ? { ...m, ...dados } : m));
   }
 
+  function exportarBackupJSON() {
+    try {
+      const payload = {
+        versao: '1.2.0',
+        dataExportacao: new Date().toISOString(),
+        metas,
+        configNotificacoes,
+        tema
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `metacheck_backup_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Erro ao exportar JSON:', e);
+    }
+  }
+
+  function exportarCSV() {
+    try {
+      const header = 'ID,Titulo,Tipo,Categoria,Status,Progresso,DataCriacao,DataPrazo,Lembrete,DiasSeguidos\n';
+      const rows = metas.map(m => {
+        const tit = `"${(m.titulo || '').replace(/"/g, '""')}"`;
+        const hor = m.horarioLembrete || '';
+        return `${m.id},${tit},${m.tipo},${m.categoria},${m.status},${m.progresso}%,${m.dataCriacao},${m.dataPrazo},${hor},${m.diasSeguidos || 0}`;
+      }).join('\n');
+
+      const blob = new Blob(['\uFEFF' + header + rows], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `metacheck_relatorio_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Erro ao exportar CSV:', e);
+    }
+  }
+
+  function importarBackupJSON(jsonString: string): boolean {
+    try {
+      const parsed = JSON.parse(jsonString);
+      const metasParaImportar = Array.isArray(parsed) ? parsed : parsed.metas;
+      if (Array.isArray(metasParaImportar) && metasParaImportar.length > 0) {
+        setMetas(metasParaImportar);
+        if (parsed.configNotificacoes) {
+          setConfigNotificacoes(parsed.configNotificacoes);
+        }
+        if (parsed.tema && ['tokyo-dark', 'oled', 'light', 'cyberpunk', 'emerald'].includes(parsed.tema)) {
+          setTema(parsed.tema);
+        }
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error('Erro ao importar JSON:', e);
+      return false;
+    }
+  }
+
   return (
     <MetasContext.Provider value={{
       metas,
+      tema,
+      mudarTema,
       configNotificacoes,
       atualizarConfigNotificacoes,
       adicionarMeta,
@@ -329,7 +418,10 @@ export const MetasProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       adicionarSubtarefa,
       removerMeta,
       editarMeta,
-      testarNotificacao
+      testarNotificacao,
+      exportarBackupJSON,
+      exportarCSV,
+      importarBackupJSON
     }}>
       {children}
     </MetasContext.Provider>

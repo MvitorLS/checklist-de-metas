@@ -33,6 +33,63 @@
   --sar: env(safe-area-inset-right, 0px);
 }
 
+/* Tema OLED Black */
+[data-theme="oled"] {
+  --bg-app: #000000;
+  --bg-card: #0d0d0d;
+  --bg-card-hover: #171717;
+  --bg-input: #141414;
+  --border: #262626;
+  --border-focus: #10b981;
+  --primary: #10b981;
+  --primary-glow: rgba(16, 185, 129, 0.25);
+  --shadow-glow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+/* Tema Light / Porcelain Clean */
+[data-theme="light"] {
+  --bg-app: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f8fafc;
+  --bg-input: #e2e8f0;
+  --border: #cbd5e1;
+  --border-focus: #0284c7;
+  --primary: #0284c7;
+  --primary-glow: rgba(2, 132, 199, 0.2);
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-dim: #94a3b8;
+  --shadow-card: 0 4px 16px -2px rgba(0, 0, 0, 0.08);
+  --shadow-glow: 0 0 16px rgba(2, 132, 199, 0.15);
+}
+
+/* Tema Cyberpunk / Neon Violet */
+[data-theme="cyberpunk"] {
+  --bg-app: #0d071a;
+  --bg-card: #180d33;
+  --bg-card-hover: #231349;
+  --bg-input: #271454;
+  --border: #3b187f;
+  --border-focus: #f43f5e;
+  --primary: #f43f5e;
+  --accent-purple: #c084fc;
+  --primary-glow: rgba(244, 63, 94, 0.3);
+  --shadow-glow: 0 0 20px rgba(244, 63, 94, 0.35);
+}
+
+/* Tema Emerald Forest */
+[data-theme="emerald"] {
+  --bg-app: #041712;
+  --bg-card: #08291f;
+  --bg-card-hover: #0e3d30;
+  --bg-input: #104838;
+  --border: #176550;
+  --border-focus: #34d399;
+  --primary: #34d399;
+  --primary-glow: rgba(52, 211, 153, 0.25);
+  --shadow-glow: 0 0 20px rgba(52, 211, 153, 0.3);
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;

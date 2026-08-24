@@ -3,17 +3,19 @@ import { MetasProvider, useMetas } from './context/MetasContext';
 import { BottomNav, ScreenTab } from './components/BottomNav';
 import { NovaMetaModal } from './components/NovaMetaModal';
 import { NotificacoesModal } from './components/NotificacoesModal';
+import { ConfiguracoesModal } from './components/ConfiguracoesModal';
 import { DashboardScreen } from './screens/DashboardScreen';
 import { MetasDiariasScreen } from './screens/MetasDiariasScreen';
 import { MetasMensaisScreen } from './screens/MetasMensaisScreen';
 import { MetasAnuaisScreen } from './screens/MetasAnuaisScreen';
-import { Bell, BellRing } from 'lucide-react';
+import { Bell, BellRing, Palette } from 'lucide-react';
 import { TipoMeta } from './types/meta';
 
 function MainApp() {
   const [abaAtiva, setAbaAtiva] = useState<ScreenTab>('dashboard');
   const [modalCriarAberto, setModalCriarAberto] = useState(false);
   const [modalNotificacoesAberto, setModalNotificacoesAberto] = useState(false);
+  const [modalConfigAberto, setModalConfigAberto] = useState(false);
   const { configNotificacoes } = useMetas();
 
   function getTipoPadrao(): TipoMeta {
@@ -33,6 +35,16 @@ function MainApp() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Botão de Tema e Backup */}
+          <button 
+            className="header-btn"
+            onClick={() => setModalConfigAberto(true)}
+            title="Temas e Backup"
+          >
+            <Palette size={19} color="var(--primary)" />
+          </button>
+
+          {/* Botão de Notificações */}
           <button 
             className="header-btn" 
             onClick={() => setModalNotificacoesAberto(true)}
@@ -40,9 +52,9 @@ function MainApp() {
             style={{ position: 'relative' }}
           >
             {configNotificacoes.ativado ? (
-              <BellRing size={20} color="#38bdf8" />
+              <BellRing size={19} color="var(--primary)" />
             ) : (
-              <Bell size={20} color="#94a3b8" />
+              <Bell size={19} color="var(--text-muted)" />
             )}
             {configNotificacoes.ativado && (
               <span style={{
@@ -52,8 +64,8 @@ function MainApp() {
                 width: '8px',
                 height: '8px',
                 borderRadius: '50%',
-                backgroundColor: '#38bdf8',
-                boxShadow: '0 0 8px #38bdf8'
+                backgroundColor: 'var(--primary)',
+                boxShadow: '0 0 8px var(--primary)'
               }} />
             )}
           </button>
@@ -77,6 +89,12 @@ function MainApp() {
       <NotificacoesModal 
         aberto={modalNotificacoesAberto}
         fechar={() => setModalNotificacoesAberto(false)}
+      />
+
+      {/* Modal de Temas & Backup */}
+      <ConfiguracoesModal 
+        aberto={modalConfigAberto}
+        fechar={() => setModalConfigAberto(false)}
       />
 
       {/* Barra de Navegação Inferior */}
