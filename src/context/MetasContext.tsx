@@ -129,16 +129,23 @@ export const MetasProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const salvo = localStorage.getItem('@metas_app_v1');
     if (salvo) {
       try {
-        return JSON.parse(salvo);
+        const parsed = JSON.parse(salvo);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
       } catch (e) {
-        console.error(e);
+        console.error('Falha ao restaurar metas do storage:', e);
       }
     }
     return METAS_INICIAIS;
   });
 
   useEffect(() => {
-    localStorage.setItem('@metas_app_v1', JSON.stringify(metas));
+    try {
+      localStorage.setItem('@metas_app_v1', JSON.stringify(metas));
+    } catch (e) {
+      console.error('Falha ao persistir metas no storage:', e);
+    }
   }, [metas]);
 
   function dispararCelebracao() {
@@ -154,17 +161,25 @@ export const MetasProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   function adicionarMeta(dados: Omit<Meta, 'id' | 'dataCriacao' | 'progresso' | 'status' | 'subtarefas'> & { subtarefasTitulos?: string[] }) {
     const id = Date.now().toString();
-    const subs: Subtarefa[] = (dados.subtarefasTitulos || []).filter(t => t.trim()).map((t, idx) => ({
-      id: `${id}_sub_${idx}`,
-      metaId: id,
-      titulo: t.trim(),
-      concluida: false
-    }));
+    const tituloLimpo = String(dados.titulo || '').trim().slice(0, 120);
+    const descLimpa = String(dados.descricao || '').trim().slice(0, 500);
+
+    if (!tituloLimpo) return;
+
+    const subs: Subtarefa[] = (dados.subtarefasTitulos || [])
+      .map(t => String(t || '').trim().slice(0, 120))
+      .filter(Boolean)
+      .map((t, idx) => ({
+        id: `${id}_sub_${idx}`,
+        metaId: id,
+        titulo: t,
+        concluida: false
+      }));
 
     const nova: Meta = {
       id,
-      titulo: dados.titulo,
-      descricao: dados.descricao,
+      titulo: tituloLimpo,
+      descricao: descLimpa,
       tipo: dados.tipo,
       categoria: dados.categoria || 'pessoal',
       dataCriacao: new Date().toISOString().split('T')[0],
