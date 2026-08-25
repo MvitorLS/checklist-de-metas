@@ -192,8 +192,11 @@ export const MetasProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       console.error('Falha ao persistir metas no storage:', e);
     }
 
-    // Agenda ou atualiza os lembretes diários automaticamente
-    notificationService.scheduleDailyReminders(configNotificacoes, metas);
+    const timer = setTimeout(() => {
+      notificationService.scheduleDailyReminders(configNotificacoes, metas);
+    }, 400);
+
+    return () => clearTimeout(timer);
   }, [metas, configNotificacoes]);
 
   async function atualizarConfigNotificacoes(novaConfig: Partial<ConfiguracoesNotificacao>) {
