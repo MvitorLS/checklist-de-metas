@@ -1,91 +1,54 @@
-# 🎯 MetaCheck — Gestão de Metas Diárias, Mensais e Anuais
+# MetaCheck
 
-<div align="center">
+App de metas e hábitos para Android e web. Separa o que é do dia (hábitos com sequência de dias), do mês (objetivos quebrados em etapas) e do ano, e lembra na hora certa com notificação local — sem conta, sem servidor, tudo fica no aparelho.
 
-![Versão](https://img.shields.io/badge/versão-1.3.2-38bdf8?style=for-the-badge&logo=android&logoColor=white)
-![React 19](https://img.shields.io/badge/React-19-61dafb?style=for-the-badge&logo=react&logoColor=black)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178c6?style=for-the-badge&logo=typescript&logoColor=white)
-![Capacitor](https://img.shields.io/badge/Capacitor-7.0-119eff?style=for-the-badge&logo=capacitor&logoColor=white)
-![Licença](https://img.shields.io/badge/licença-MIT-10b981?style=for-the-badge)
+**[Abrir versão web](https://mvitorls.github.io/checklist-de-metas/)** · **[Baixar APK (v1.3.2)](https://github.com/MvitorLS/checklist-de-metas/releases/latest)** · [Changelog](./CHANGELOG.md)
 
-<br/>
+<p align="center">
+  <img src="docs/metacheck-1.png" width="260" alt="Tela inicial com checklist do dia e sequência de dias" />
+  &nbsp;&nbsp;
+  <img src="docs/metacheck-2.png" width="260" alt="Metas mensais com progresso por etapas" />
+</p>
 
-**Aplicativo Mobile Nativo & PWA para Gestão de Metas, Hábitos e Alarmes em Tempo Real.**
+## Funcionalidades
 
-[📥 Baixar APK Android (v1.3.2)](https://github.com/MvitorLS/checklist-de-metas/releases/latest) • [🎨 Design System](./FIGMA_DESIGN_SYSTEM.md) • [✨ Releases](https://github.com/MvitorLS/checklist-de-metas/releases)
+- **Três horizontes**: diárias (check-off + contagem de dias seguidos), mensais (etapas com progresso 0–100%) e anuais (com prazo).
+- **Lembretes nativos no Android** via `@capacitor/local-notifications`: resumo de manhã, revisão à noite com o que ficou pendente e alarme individual por meta. Os agendamentos usam `allowWhileIdle` + `SCHEDULE_EXACT_ALARM` para disparar no horário mesmo com o aparelho em repouso, num canal de prioridade alta (aparece como pop-up e toca som).
+- **5 temas** trocados em tempo real por CSS custom properties.
+- **Backup**: exporta/importa tudo em JSON e exporta relatório em CSV.
+- **Offline**: estado em `localStorage`, gerenciado por um `Context` do React (`src/context/MetasContext.tsx`).
 
-</div>
+## Estrutura
 
----
-
-## 📱 Visão Geral
-
-O **MetaCheck** é um aplicativo mobile híbrido de alta performance desenvolvido para acompanhar hábitos diários, objetivos mensais e metas estratégicas anuais com foco em produtividade pessoal, alarmes nativos e design personalizável.
-
-### 🌟 Principais Recursos
-
-1. **🔔 Sistema de Notificações & Alarmes Nativos**:
-   - **Lembrete Matinal (08:00)**: Resumo das metas do dia logo cedo para planejar o foco.
-   - **Revisão Noturna (20:00)**: Lembrete com contagem das metas pendentes para fechar o dia em 100%.
-   - **Alarmes Individuais**: Definição de horários específicos por meta com disparo no segundo exato (`SCHEDULE_EXACT_ALARM`).
-   - **Pop-up Heads-Up com Som & Vibração**: Notificações com canal de alta prioridade (`IMPORTANCE_HIGH = 5`) e som harmônico sintetizado via Web Audio.
-   - **Celebração de Vitória**: Notificação comemorativa automática e confetes na tela ao bater todas as metas diárias.
-
-2. **🌈 Motor de 5 Temas Visuais Dinâmicos**:
-   - 🌙 **Tokyo Dark**: Azul neon & marinho escuro (tema padrão moderno).
-   - 🌌 **OLED Pitch Black**: Preto puro (`#000000`) com acentos esmeralda para economia de bateria.
-   - ☀️ **Porcelain Light**: Tema claro e minimalista com acentos azul oceano.
-   - 🟣 **Cyberpunk Neon**: Roxo profundo (`#0d071a`) com acentos magenta/rose neon.
-   - 🌲 **Emerald Forest**: Tons floresta/saúde com verde esmeralda.
-
-3. **💾 Central de Backup & Exportação**:
-   - 📥 **Backup Completo (JSON)**: Exportação e restauração completa de dados em 1 clique.
-   - 📊 **Exportação em Planilha (CSV)**: Relatórios formatados para abrir no Excel ou Google Planilhas.
-   - 🔒 **Privacidade Total**: Todos os dados e configurações são armazenados 100% offline no dispositivo.
-
-4. **🎯 3 Horizontes de Tempo**:
-   - **Diárias:** Hábitos com check-off rápido, dias seguidos (*streaks*) e cálculo da taxa de conclusão.
-   - **Mensais:** Objetivos de médio prazo divididos em etapas/subtarefas dinâmicas com progresso incremental (0–100%).
-   - **Anuais:** Metas estratégicas de longo prazo com acompanhamento de prazos.
-
----
-
-## 🛠️ Tecnologias Utilizadas
-
-* **Frontend:** React 19, TypeScript, Vite
-* **Mobile Runtime:** Capacitor 7 (Android / iOS / PWA)
-* **Notificações:** `@capacitor/local-notifications`, Web Notifications API, Web Audio API
-* **Ícones & UI:** Lucide React, Canvas Confetti, CSS Custom Properties Dinâmicas
-* **Build Android:** Gradle 8.13, OpenJDK 17, Android SDK 35/36
-
----
-
-## 🚀 Como Rodar Localmente
-
-```bash
-# Instalar dependências
-npm install
-
-# Rodar servidor de desenvolvimento
-npm run dev
-
-# Compilar para produção Web / PWA
-npm run build
-
-# Sincronizar com o projeto Android
-npx cap sync android
+```
+src/
+├── context/MetasContext.tsx        # estado global + persistência
+├── services/notificationService.ts # permissões, canal Android e agendamentos
+├── screens/                        # Dashboard, Diárias, Mensais, Anuais
+├── components/                     # cards, modais de nova meta/config/notificações
+└── types/meta.ts
+android/                            # projeto nativo gerado pelo Capacitor
 ```
 
----
+## Rodando
 
-## 📦 Como Instalar o APK no Android
+```bash
+npm install
+npm run dev              # web em http://localhost:5174
 
-1. Acesse a aba de [Releases do GitHub](https://github.com/MvitorLS/checklist-de-metas/releases/latest).
-2. Baixe o arquivo **`MetaCheck-v1.3.2-sound-alarm.apk`**.
-3. Abra o arquivo no seu smartphone Android e confirme a instalação.
+npm run build
+npx cap sync android     # copia o build para o projeto Android
+npx cap open android     # abre no Android Studio para gerar o APK
+```
 
----
+O deploy da versão web é feito pelo GitHub Actions (`.github/workflows/deploy-pages.yml`) a cada push na `main`.
 
-## 📄 Licença
+## Stack
 
-Distribuído sob a licença MIT. Desenvolvido por [Matheus Vitor Lourenço Schionato](https://github.com/MvitorLS).
+React 19 · TypeScript · Vite · Capacitor 7 · Lucide · canvas-confetti
+
+## Próximos passos
+
+- [ ] Corrigir o card de sequência e a linha de filtros que ficam cortados no topo da tela inicial em telas estreitas
+- [ ] Testes para o cálculo de sequência e de progresso
+- [ ] Sincronização opcional entre aparelhos
