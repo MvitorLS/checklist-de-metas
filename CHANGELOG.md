@@ -4,6 +4,13 @@ Todas as alterações e versões deste projeto são documentadas neste arquivo.
 
 ---
 
+## [Não lançado]
+
+### Correções
+* **Topo da tela inicial cortado:** o card de sequência e a linha de filtros encolhiam dentro da coluna flex de altura fixa (`.screen-content`). Filhos agora usam `flex-shrink: 0`.
+
+---
+
 ## [1.1.0] — 2026-08-23
 
 ### 📱 Correções de Layout e Responsividade Mobile

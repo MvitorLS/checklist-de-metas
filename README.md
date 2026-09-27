@@ -49,6 +49,5 @@ React 19 · TypeScript · Vite · Capacitor 7 · Lucide · canvas-confetti
 
 ## Próximos passos
 
-- [ ] Corrigir o card de sequência e a linha de filtros que ficam cortados no topo da tela inicial em telas estreitas
 - [ ] Testes para o cálculo de sequência e de progresso
 - [ ] Sincronização opcional entre aparelhos

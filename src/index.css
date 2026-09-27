@@ -209,6 +209,10 @@ body {
   overflow-x: hidden;
 }
 
+.screen-content > * {
+  flex-shrink: 0;
+}
+
 /* Hero Banner Resumo */
 .hero-card {
   background: linear-gradient(135deg, #0284c7 0%, #2563eb 50%, #4f46e5 100%);
